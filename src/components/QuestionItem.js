@@ -1,33 +1,42 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-function QuestionItem({ question, onDeleteClick, onAnswerChange }) {
-  const { id, prompt, answers, correctIndex } = question;
+function QuestionItem({ question, onDelete, onUpdate }) {
+  // Add local state to track the select value
+  const [selectedValue, setSelectedValue] = useState(
+    question.correctIndex.toString()
+  );
 
-  const options = answers.map((answer, index) => (
-    <option key={index} value={index}>
-      {answer}
-    </option>
-  ));
+  // Update local state when question prop changes
+  useEffect(() => {
+    setSelectedValue(question.correctIndex.toString());
+  }, [question.correctIndex]);
 
-  function handleDeleteClick() {
-    onDeleteClick(id);
-  }
-
-  function handleAnswerChange(event) {
-    onAnswerChange(id, parseInt(event.target.value));
-  }
+  const handleChange = (e) => {
+    const newValue = e.target.value;
+    // Update local state immediately
+    setSelectedValue(newValue);
+    // Then update parent state
+    onUpdate(question.id, newValue);
+  };
 
   return (
     <li>
-      <h4>Question {id}</h4>
-      <h5>Prompt: {prompt}</h5>
+      <h4>{question.prompt}</h4>
       <label>
         Correct Answer:
-        <select defaultValue={correctIndex} onChange={handleAnswerChange}>
-          {options}
+        <select
+          aria-label="Correct Answer"
+          value={selectedValue} // Use local state instead of prop directly
+          onChange={handleChange}
+        >
+          {question.answers.map((answer, index) => (
+            <option key={index} value={index.toString()}>
+              {answer}
+            </option>
+          ))}
         </select>
       </label>
-      <button onClick={handleDeleteClick}>Delete Question</button>
+      <button onClick={() => onDelete(question.id)}>Delete Question</button>
     </li>
   );
 }
